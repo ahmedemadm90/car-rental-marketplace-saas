@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 final class AuditEvent extends Model
 {
+    public const CREATED_AT = null;
+
     public const UPDATED_AT = null;
 
     protected $guarded = [];
