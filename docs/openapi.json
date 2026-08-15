@@ -1,0 +1,231 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "VoyagerRent API",
+        "description": "Versioned API for the VoyagerRent multi-tenant rental marketplace.",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/auth/mobile/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Create a mobile JWT session and register a device",
+                "operationId": "mobileLogin",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password",
+                                    "device_id",
+                                    "platform",
+                                    "app_version"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "device_id": {
+                                        "type": "string"
+                                    },
+                                    "platform": {
+                                        "type": "string",
+                                        "enum": [
+                                            "android",
+                                            "ios"
+                                        ]
+                                    },
+                                    "app_version": {
+                                        "type": "string"
+                                    },
+                                    "push_token": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authenticated mobile session"
+                    },
+                    "422": {
+                        "description": "Invalid credentials or request"
+                    }
+                }
+            },
+            "servers": [
+                {
+                    "url": "/api/v1",
+                    "description": "Current platform server"
+                }
+            ]
+        },
+        "/marketplace/search": {
+            "get": {
+                "tags": [
+                    "Marketplace"
+                ],
+                "summary": "Search public rental offers with live capacity and price",
+                "operationId": "searchMarketplaceOffers",
+                "parameters": [
+                    {
+                        "name": "pickup_at",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "return_at",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "pickup_branch_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "return_branch_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated comparable offers"
+                    }
+                }
+            },
+            "servers": [
+                {
+                    "url": "/api/v1",
+                    "description": "Current platform server"
+                }
+            ]
+        },
+        "/reservations": {
+            "post": {
+                "tags": [
+                    "Reservations"
+                ],
+                "summary": "Create a time-limited reservation and inventory hold",
+                "operationId": "createReservationHold",
+                "parameters": [
+                    {
+                        "name": "Idempotency-Key",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "vehicle_group_id",
+                                    "rate_plan_id",
+                                    "pickup_branch_id",
+                                    "return_branch_id",
+                                    "pickup_at",
+                                    "return_at"
+                                ],
+                                "properties": {
+                                    "vehicle_group_id": {
+                                        "type": "integer"
+                                    },
+                                    "rate_plan_id": {
+                                        "type": "integer"
+                                    },
+                                    "pickup_branch_id": {
+                                        "type": "integer"
+                                    },
+                                    "return_branch_id": {
+                                        "type": "integer"
+                                    },
+                                    "pickup_at": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "return_at": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Reservation hold created"
+                    },
+                    "422": {
+                        "description": "Invalid or unavailable request"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "servers": [
+                {
+                    "url": "/api/v1",
+                    "description": "Current platform server"
+                }
+            ]
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication"
+        },
+        {
+            "name": "Marketplace"
+        },
+        {
+            "name": "Reservations"
+        }
+    ]
+}

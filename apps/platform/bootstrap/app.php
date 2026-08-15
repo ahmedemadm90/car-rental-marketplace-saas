@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(AssignRequestId::class);
-        $middleware->append(SetLocale::class);
+        $middleware->web(append: [SetLocale::class]);
         $middleware->alias([
             'tenant' => ResolveTenant::class,
         ]);

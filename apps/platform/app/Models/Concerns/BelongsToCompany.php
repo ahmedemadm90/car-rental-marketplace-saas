@@ -8,6 +8,7 @@ use App\Domain\Tenancy\TenantContext;
 use App\Models\Company;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use LogicException;
 
 /** @mixin Model */
@@ -36,7 +37,7 @@ trait BelongsToCompany
         });
     }
 
-    public function company()
+    public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
     }

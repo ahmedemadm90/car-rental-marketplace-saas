@@ -10,18 +10,25 @@ use App\Models\Branch;
 use App\Models\RatePlan;
 use App\Models\VehicleGroup;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 final class MarketplaceSearch extends Component
 {
     public string $pickupAt;
+
     public string $returnAt;
+
     public ?int $pickupBranchId = null;
+
     public ?int $returnBranchId = null;
+
     public ?string $category = null;
+
     public ?string $transmission = null;
+
     public ?string $fuelType = null;
+
     public ?int $minimumSeats = null;
 
     public function mount(): void
@@ -53,8 +60,7 @@ final class MarketplaceSearch extends Component
         $this->validateOnly($property);
     }
 
-    /** @return array{offers: Collection<int, array<string, mixed>>, branches: Collection<int, Branch>} */
-    public function render(AvailabilityService $availability, PricingService $pricing): array
+    public function render(AvailabilityService $availability, PricingService $pricing): View
     {
         $branches = Branch::query()->withoutGlobalScopes()->where('is_active', true)->orderBy('name')->get();
         $offers = collect();
@@ -100,6 +106,6 @@ final class MarketplaceSearch extends Component
             }
         }
 
-        return ['offers' => $offers, 'branches' => $branches];
+        return view('livewire.marketplace-search', ['offers' => $offers, 'branches' => $branches]);
     }
 }

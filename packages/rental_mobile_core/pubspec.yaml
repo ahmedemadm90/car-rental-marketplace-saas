@@ -1,0 +1,20 @@
+name: rental_mobile_core
+description: Shared authenticated API, encrypted offline storage, and sync primitives for VoyagerRent Flutter clients.
+publish_to: none
+version: 1.0.0+1
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+dependencies:
+  connectivity_plus: ^6.1.4
+  dio: ^5.8.0+1
+  flutter:
+    sdk: flutter
+  flutter_secure_storage: ^9.2.4
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  sqflite_sqlcipher: ^3.1.0
+  uuid: ^4.5.1
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter

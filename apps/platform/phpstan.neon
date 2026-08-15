@@ -1,0 +1,13 @@
+includes:
+  - vendor/larastan/larastan/extension.neon
+
+parameters:
+  paths:
+    - app
+    - database
+    - routes
+  level: 0
+  treatPhpDocTypesAsCertain: false
+  excludePaths:
+    - bootstrap/cache/*
+    - storage/*

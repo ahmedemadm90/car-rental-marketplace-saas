@@ -1,0 +1,114 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  backend:
+    name: Laravel quality and tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/platform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: bcmath, intl, mbstring, pdo_sqlite, redis, zip
+          coverage: none
+      - uses: ramsey/composer-install@v3
+        with:
+          working-directory: apps/platform
+      - run: composer validate --strict
+      - run: composer audit --locked
+      - run: ./vendor/bin/pint --test
+      - run: php artisan test
+      - run: ./vendor/bin/phpstan analyse --memory-limit=1G
+      - run: php artisan l5-swagger:generate
+
+  frontend:
+    name: Web asset build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/platform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: apps/platform/pnpm-lock.yaml
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+  customer-mobile:
+    name: Customer Flutter app
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/customer_mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: dart format --set-exit-if-changed lib test
+      - run: flutter analyze
+      - run: flutter test
+
+  employee-mobile:
+    name: Employee Flutter app
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/employee_mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: dart format --set-exit-if-changed lib test
+      - run: flutter analyze
+      - run: flutter test
+
+  security:
+    name: Security and supply chain
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript, actions
+      - uses: github/codeql-action/analyze@v3
+
+  container:
+    name: Container image build
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infrastructure/docker/php/Dockerfile
+          push: false
+          tags: voyagerrent/platform:${{ github.sha }}
